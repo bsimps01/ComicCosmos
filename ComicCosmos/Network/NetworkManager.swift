@@ -20,7 +20,7 @@ public enum Route: String {
 class NetworkManager {
     
     //MARK: - Character Fethcer
-    func fetchMarvelCharacters(completion: @escaping ([MarvelCharacter]?, Error?) -> Void) {
+    func fetchMarvelCharacters(query: String? = nil, offSet: Int? = nil, completion: @escaping ([MarvelCharacter]?, Error?) -> Void) {
         let timeStamp = String(Int(Date().timeIntervalSince1970))
         let hashInput = timeStamp + Key.privateKey + Key.publicKey
         let hash = Insecure.MD5.hash(data: Data(hashInput.utf8)).map { String(format: "%02hhx", $0) }.joined()
@@ -32,7 +32,14 @@ class NetworkManager {
             URLQueryItem(name: "ts", value: timeStamp),
             URLQueryItem(name: "hash", value: hash)
         ]
+
+        if let query = query {
+            components.queryItems?.append(URLQueryItem(name: "nameStartsWith", value: query))
+        }
         
+        // Add offset to the query parameters
+        components.queryItems?.append(URLQueryItem(name: "offset", value: String(offSet ?? 0)))
+
         guard let url = components.url else {
             completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
             return
@@ -64,7 +71,7 @@ class NetworkManager {
     }
     
     //MARK: - Comic Fetcher
-    func fetchMarvelComics(completion: @escaping ([Comic]?, Error?) -> Void) {
+    func fetchMarvelComics(query: String? = nil, offSet: Int? = nil, completion: @escaping ([Comic]?, Error?) -> Void) {
         let timeStamp = String(Int(Date().timeIntervalSince1970))
         let hashInput = timeStamp + Key.privateKey + Key.publicKey
         let hash = Insecure.MD5.hash(data: Data(hashInput.utf8)).map { String(format: "%02hhx", $0) }.joined()
@@ -76,6 +83,13 @@ class NetworkManager {
             URLQueryItem(name: "ts", value: timeStamp),
             URLQueryItem(name: "hash", value: hash)
         ]
+        
+        if let query = query {
+            components.queryItems?.append(URLQueryItem(name: "nameStartsWith", value: query))
+        }
+        
+        // Add offset to the query parameters
+        components.queryItems?.append(URLQueryItem(name: "offset", value: String(offSet ?? 0)))
         
         guard let url = components.url else {
             completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
@@ -108,7 +122,7 @@ class NetworkManager {
     }
     
     //MARK: - Creator Fetcher
-    func fetchCreators(completion: @escaping ([Creator]?, Error?) -> Void) {
+    func fetchCreators(query: String? = nil, offSet: Int? = nil, completion: @escaping ([Creator]?, Error?) -> Void) {
         let timeStamp = String(Int(Date().timeIntervalSince1970))
         let hashInput = timeStamp + Key.privateKey + Key.publicKey
         let hash = Insecure.MD5.hash(data: Data(hashInput.utf8)).map { String(format: "%02hhx", $0) }.joined()
@@ -120,6 +134,13 @@ class NetworkManager {
             URLQueryItem(name: "ts", value: timeStamp),
             URLQueryItem(name: "hash", value: hash)
         ]
+        
+        if let query = query {
+            components.queryItems?.append(URLQueryItem(name: "nameStartsWith", value: query))
+        }
+        
+        // Add offset to the query parameters
+        components.queryItems?.append(URLQueryItem(name: "offset", value: String(offSet ?? 0)))
         
         guard let url = components.url else {
             completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))

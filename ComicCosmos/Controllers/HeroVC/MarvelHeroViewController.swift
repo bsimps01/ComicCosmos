@@ -44,6 +44,8 @@ class MarvelHeroViewController: UIViewController {
     
     var searchCharacters: [MarvelCharacter] = []
     
+    var offSet = 0
+    
     //MARK: - Initializers
     
     override func viewDidLoad() {
@@ -66,11 +68,26 @@ class MarvelHeroViewController: UIViewController {
     }
     
     //Fetches network call
-    func fetchHeroData() {
+    func fetchHeroData(query: String? = nil, offSet: Int? = nil) {
         
-        networkManager.fetchMarvelCharacters { [weak self] characters, error in
+        networkManager.fetchMarvelCharacters(query: query, offSet: offSet) { [weak self] characters, error in
             if let characters = characters {
                 self?.characters = characters
+                DispatchQueue.main.async {
+                    self?.marvelHeroCollectionView.reloadData()
+                }
+            } else if let error = error {
+                print("Error: ", error)
+            }
+        }
+    }
+    
+    func loadMoreCharacters() {
+        offSet += 20 // Increment by the number of characters per page
+        networkManager.fetchMarvelCharacters(offSet: offSet) { [weak self] characters, error in
+            if let characters = characters {
+                // Append the fetched characters to your existing list
+                self?.characters.append(contentsOf: characters)
                 DispatchQueue.main.async {
                     self?.marvelHeroCollectionView.reloadData()
                 }
@@ -106,25 +123,30 @@ class MarvelHeroViewController: UIViewController {
         }
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "marvelHeroCell", for: indexPath) as! MarvelHeroCollectionViewCell
+            cell.layer.cornerRadius = 20
+            cell.layer.borderWidth = 5
+            cell.layer.borderColor = UIColor.black.cgColor
+            cell.clipsToBounds = true
             
             if searching {
-                
-                cell.heroLabel.text = searchCharacters[indexPath.item].name
-                
-                let sh = searchCharacters[indexPath.item]
+
+                cell.heroLabel.text = self.searchCharacters[indexPath.item].name
+                    
+                let sh = self.searchCharacters[indexPath.item]
+                    
                 var thumbnailURLString = (sh.thumbnail?.path)! + "." + (sh.thumbnail?.imageExtension)!
-                thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
-                
+                    thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
+                    
                 if let thumbnailURL = URL(string: thumbnailURLString) {
-                    cell.heroImage.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "background"))
+                        cell.heroImage.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "background"))
                 }
+
             } else {
                 let heroes = characters[indexPath.item]
                 cell.configureHeroCells(mvHero: heroes)
-                cell.layer.cornerRadius = 20
-                cell.layer.borderWidth = 5
-                cell.layer.borderColor = UIColor.black.cgColor
+                cell.heroLabel.text = heroes.name
                 
                 var thumbnailURLString = (heroes.thumbnail?.path)! + "." + (heroes.thumbnail?.imageExtension)!
                 thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
@@ -132,7 +154,6 @@ class MarvelHeroViewController: UIViewController {
                 if let thumbnailURL = URL(string: thumbnailURLString) {
                     cell.heroImage.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "background"))
                 }
-                cell.clipsToBounds = true
             }
             return cell
         }
@@ -157,6 +178,12 @@ class MarvelHeroViewController: UIViewController {
             return UIEdgeInsets(top: 20, left: 20, bottom: 40, right: 20)
         }
         
+        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+            if indexPath.item == characters.count - 1 {  // last cell
+                loadMoreCharacters()
+            }
+        }
+        
     }
 
 //MARK: - Search
@@ -169,6 +196,7 @@ extension MarvelHeroViewController: UISearchResultsUpdating, UISearchBarDelegate
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
+        searchController.searchBar.backgroundColor = .white
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
@@ -186,9 +214,11 @@ extension MarvelHeroViewController: UISearchResultsUpdating, UISearchBarDelegate
             searchCharacters = characters.filter({ mc in
                 return (mc.name?.lowercased().contains(searchText.lowercased()) ?? false)
             })
+            fetchHeroData(query: searchText)
         } else {
             searching = false
-            searchCharacters = characters
+            //searchCharacters = characters
+            fetchHeroData()
         }
         self.marvelHeroCollectionView.reloadData()
     }

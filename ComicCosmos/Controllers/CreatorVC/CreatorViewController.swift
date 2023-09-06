@@ -44,6 +44,8 @@ class CreatorViewController: UIViewController {
     
     var searchCreators: [Creator] = []
     
+    var offSet = 0
+    
     //MARK: - Initializers
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,11 +67,26 @@ class CreatorViewController: UIViewController {
     }
     
     //Fetches data from network call
-    func fetchCreatorData() {
+    func fetchCreatorData(query: String? = nil, offSet: Int? = nil) {
         
-        networkManager.fetchCreators{ [weak self] creators, error in
+        networkManager.fetchCreators(query: query, offSet: offSet){ [weak self] creators, error in
             if let creators = creators {
                 self?.creators = creators
+                DispatchQueue.main.async {
+                    self?.creatorCollectionView.reloadData()
+                }
+            } else if let error = error {
+                print("Error: ", error)
+            }
+        }
+    }
+    
+    func loadMoreCreators() {
+        offSet += 20 // Increment by the number of characters per page
+        networkManager.fetchCreators(offSet: offSet) { [weak self] creators, error in
+            if let creators = creators {
+                // Append the fetched characters to your existing list
+                self?.creators.append(contentsOf: creators)
                 DispatchQueue.main.async {
                     self?.creatorCollectionView.reloadData()
                 }
@@ -106,6 +123,11 @@ class CreatorViewController: UIViewController {
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "creatorCell", for: indexPath) as! CreatorCollectionViewCell
+            cell.layer.cornerRadius = 20
+            cell.layer.borderWidth = 5
+            cell.layer.borderColor = UIColor.black.cgColor
+            cell.clipsToBounds = true
+            
             if searching {
                 cell.creatorLabel.text = searchCreators[indexPath.item].firstName
                 
@@ -120,9 +142,7 @@ class CreatorViewController: UIViewController {
         
                 let creators = creators[indexPath.item]
                 cell.configureCreators(mvCreator: creators)
-                cell.layer.cornerRadius = 20
-                cell.layer.borderWidth = 5
-                cell.layer.borderColor = UIColor.black.cgColor
+                cell.creatorLabel.text = creators.firstName
             
                 var thumbnailURLString = (creators.thumbnail?.path)! + "." + (creators.thumbnail?.imageExtension)!
             thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
@@ -130,7 +150,7 @@ class CreatorViewController: UIViewController {
                 if let thumbnailURL = URL(string: thumbnailURLString) {
                     cell.creatorImage.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "background"))
                 }
-            cell.clipsToBounds = true
+            
             }
             return cell
         }
@@ -151,6 +171,12 @@ class CreatorViewController: UIViewController {
             return UIEdgeInsets(top: 20, left: 20, bottom: 40, right: 20)
         }
         
+        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+            if indexPath.item == creators.count - 1 {  // last cell
+                loadMoreCreators()
+            }
+        }
+        
     }
 
 // MARK: - Search
@@ -163,6 +189,7 @@ extension CreatorViewController: UISearchResultsUpdating, UISearchBarDelegate {
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
+        searchController.searchBar.backgroundColor = .white
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
@@ -180,9 +207,10 @@ extension CreatorViewController: UISearchResultsUpdating, UISearchBarDelegate {
             searchCreators = creators.filter({ mc in
                 return (mc.firstName?.lowercased().contains(searchText.lowercased()) ?? false)
             })
+            fetchCreatorData(query: searchText)
         } else {
             searching = false
-            searchCreators = creators
+            fetchCreatorData()
         }
         self.creatorCollectionView.reloadData()
     }

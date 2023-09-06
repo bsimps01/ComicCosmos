@@ -41,6 +41,8 @@ class MarvelComicViewController: UIViewController {
     var searching = false
     
     var searchComics: [Comic] = []
+
+    var offSet = 0
     
     
     override func viewDidLoad() {
@@ -56,17 +58,32 @@ class MarvelComicViewController: UIViewController {
         marvelComicCollectionView.delegate = self
         view.addSubview(marvelComicCollectionView)
         
-        fetchHeroData()
+        fetchComicData()
         
         configureSearchController()
         
     }
     
-    func fetchHeroData() {
+    func fetchComicData(query: String? = nil, offSet: Int? = nil) {
         
-        networkManager.fetchMarvelComics { [weak self] comics, error in
+        networkManager.fetchMarvelComics(query: query, offSet: offSet) { [weak self] comics, error in
             if let comics = comics {
                 self?.comics = comics
+                DispatchQueue.main.async {
+                    self?.marvelComicCollectionView.reloadData()
+                }
+            } else if let error = error {
+                print("Error: ", error)
+            }
+        }
+    }
+    
+    func loadMoreComics() {
+        offSet += 20 // Increment by the number of characters per page
+        networkManager.fetchMarvelComics(offSet: offSet) { [weak self] comics, error in
+            if let comics = comics {
+                // Append the fetched characters to your existing list
+                self?.comics.append(contentsOf: comics)
                 DispatchQueue.main.async {
                     self?.marvelComicCollectionView.reloadData()
                 }
@@ -103,6 +120,11 @@ class MarvelComicViewController: UIViewController {
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "marvelComicCell", for: indexPath) as! MarvelComicCollectionViewCell
+            cell.layer.cornerRadius = 20
+            cell.layer.borderWidth = 5
+            cell.layer.borderColor = UIColor.black.cgColor
+            cell.clipsToBounds = true
+            
             if searching {
                 cell.comicLabel.text = searchComics[indexPath.item].title
                 
@@ -118,9 +140,7 @@ class MarvelComicViewController: UIViewController {
                 //Access Cell
                 let comics = comics[indexPath.item]
                 cell.configureComicCells(mvComic: comics)
-                cell.layer.cornerRadius = 20
-                cell.layer.borderWidth = 5
-                cell.layer.borderColor = UIColor.black.cgColor
+                cell.comicLabel.text = comics.title
                 
                 //Comic Image
                 var thumbnailURLString = (comics.thumbnail?.path)! + "." + (comics.thumbnail?.imageExtension)!
@@ -129,7 +149,6 @@ class MarvelComicViewController: UIViewController {
                 if let thumbnailURL = URL(string: thumbnailURLString) {
                     cell.comicImage.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "background"))
                 }
-                cell.clipsToBounds = true
             }
             return cell
         }
@@ -155,6 +174,12 @@ class MarvelComicViewController: UIViewController {
             return UIEdgeInsets(top: 20, left: 20, bottom: 40, right: 20)
         }
         
+        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+            if indexPath.item == comics.count - 1 {  // last cell
+                loadMoreComics()
+            }
+        }
+        
     }
 
 // MARK: - Search
@@ -167,6 +192,7 @@ extension MarvelComicViewController: UISearchResultsUpdating, UISearchBarDelegat
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
+        searchController.searchBar.backgroundColor = .white
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
@@ -184,11 +210,13 @@ extension MarvelComicViewController: UISearchResultsUpdating, UISearchBarDelegat
             searchComics = comics.filter({ mc in
                 return (mc.title?.lowercased().contains(searchText.lowercased()) ?? false)
             })
+            fetchComicData(query: searchText)
+            
         } else {
             searching = false
-            //characters.removeAll()
-            searchComics = comics
+            fetchComicData()
         }
+        
         self.marvelComicCollectionView.reloadData()
     }
     
