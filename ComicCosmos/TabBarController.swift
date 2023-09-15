@@ -24,18 +24,18 @@ class TabBarController: UITabBarController, UITabBarControllerDelegate {
         let hvc = MarvelHeroViewController()
         hvc.tabBarItem = UITabBarItem(title: "Heroes", image: UIImage(named:
                                                                         "figure.run.circle.fill"), selectedImage: UIImage(named: "figure.run.circle.fill"))
-        hvc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 24)], for: .normal)
+        hvc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 21)], for: .normal)
         hvc.tabBarItem.badgeColor = .white
         let heroNavigation = UINavigationController(rootViewController: hvc)
         
         let comicVc = MarvelComicViewController()
         comicVc.tabBarItem = UITabBarItem(title: "Comics", image: UIImage(named: "book.circle.fill"), selectedImage: UIImage(named: "book.circle.fill"))
-        comicVc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 24)], for: .normal)
+        comicVc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 21)], for: .normal)
         let comicsNavigation = UINavigationController(rootViewController: comicVc)
         
         let creatorVc = CreatorViewController()
         creatorVc.tabBarItem = UITabBarItem(title: "Creators", image: UIImage(named: "brain.head.profile"), selectedImage: UIImage(named: "brain.head.profile"))
-        creatorVc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 24)], for: .normal)
+        creatorVc.tabBarItem.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 21)], for: .normal)
         let creatorNavigation = UINavigationController(rootViewController: creatorVc)
         
         viewControllers = [heroNavigation, comicsNavigation, creatorNavigation]

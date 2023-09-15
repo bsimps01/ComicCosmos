@@ -50,10 +50,7 @@ class CreatorViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        backgroundImage.image = UIImage(named: "background")
-        view.addSubview(backgroundImage)
-        view.sendSubviewToBack(backgroundImage)
+        view.backgroundColor = .black
         
         creatorCollectionView.backgroundColor = .clear
         creatorCollectionView.dataSource = self
@@ -63,6 +60,26 @@ class CreatorViewController: UIViewController {
         fetchCreatorData()
         
         configureSearchController()
+        
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        self.navigationItem.title = "Creators"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .always
+        
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+    
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        navigationController?.navigationBar.barTintColor = .black
+        
+        navigationController?.navigationBar.isTranslucent = true
+
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
     }
     
@@ -128,6 +145,13 @@ class CreatorViewController: UIViewController {
             cell.layer.borderColor = UIColor.black.cgColor
             cell.clipsToBounds = true
             
+            let backgroundImageView = UIImageView(frame: cell.bounds)
+            backgroundImageView.image = UIImage(named: "background")
+            backgroundImageView.contentMode = .scaleAspectFill
+            backgroundImageView.clipsToBounds = true
+            
+            cell.backgroundView = backgroundImageView
+            
             if searching {
                 cell.creatorLabel.text = searchCreators[indexPath.item].firstName
                 
@@ -184,16 +208,26 @@ class CreatorViewController: UIViewController {
 extension CreatorViewController: UISearchResultsUpdating, UISearchBarDelegate {
     
     private func configureSearchController(){
+        
         searchController.loadViewIfNeeded()
         searchController.searchResultsUpdater = self
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
-        searchController.searchBar.backgroundColor = .white
+        
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
         searchController.searchBar.placeholder = "Search Creators"
+        
+        // Change the text color to white
+        if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            textField.textColor = UIColor.white
+            // Change the placeholder text color to white
+            if let placeholderLabel = textField.value(forKey: "placeholderLabel") as? UILabel {
+                placeholderLabel.textColor = UIColor.white
+            }
+        }
         
     }
     

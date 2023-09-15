@@ -58,8 +58,8 @@ class NetworkManager {
             
             do {
                 let decoder = JSONDecoder()
-                let response = try decoder.decode(MarvelCharacterResponse.self, from: data)
-                let characters = response.data.results
+                let response = try decoder.decode(MarvelCharacterResponse?.self, from: data)
+                let characters = response?.data?.results
                 completion(characters, nil)
             } catch {
                 completion(nil, error)
@@ -85,7 +85,7 @@ class NetworkManager {
         ]
         
         if let query = query {
-            components.queryItems?.append(URLQueryItem(name: "nameStartsWith", value: query))
+            components.queryItems?.append(URLQueryItem(name: "titleStartsWith", value: query))
         }
         
         // Add offset to the query parameters
@@ -109,8 +109,8 @@ class NetworkManager {
             
             do {
                 let decoder = JSONDecoder()
-                let response = try decoder.decode(ComicResponse.self, from: data)
-                let comics = response.data.results
+                let response = try decoder.decode(ComicResponse?.self, from: data)
+                let comics = response?.data?.results
                 completion(comics, nil)
             } catch {
                 completion(nil, error)
@@ -136,7 +136,7 @@ class NetworkManager {
         ]
         
         if let query = query {
-            components.queryItems?.append(URLQueryItem(name: "nameStartsWith", value: query))
+            components.queryItems?.append(URLQueryItem(name: "firstNameStartsWith", value: query))
         }
         
         // Add offset to the query parameters
@@ -160,8 +160,8 @@ class NetworkManager {
             
             do {
                 let decoder = JSONDecoder()
-                let response = try decoder.decode(CreatorResponse.self, from: data)
-                let comics = response.data.results
+                let response = try decoder.decode(CreatorResponse?.self, from: data)
+                let comics = response?.data?.results
                 completion(comics, nil)
             } catch {
                 completion(nil, error)

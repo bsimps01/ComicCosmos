@@ -23,7 +23,6 @@ class MarvelHeroViewController: UIViewController {
         return image
     }()
     
-    
     let device = UIDevice.current
     
     private var marvelHeroCollectionView: UICollectionView = {
@@ -51,10 +50,7 @@ class MarvelHeroViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        backgroundImage = UIImageView(frame: view.frame)
-        backgroundImage.image = UIImage(named: "background")
-        view.addSubview(backgroundImage)
-        view.sendSubviewToBack(backgroundImage)
+        view.backgroundColor = .black
         
         marvelHeroCollectionView.backgroundColor = .clear
         marvelHeroCollectionView.dataSource = self
@@ -66,6 +62,24 @@ class MarvelHeroViewController: UIViewController {
         configureSearchController()
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        self.navigationItem.title = "Characters"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .always
+        
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        navigationController?.navigationBar.barTintColor = .black
+        
+        navigationController?.navigationBar.isTranslucent = true
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+    }
+
     
     //Fetches network call
     func fetchHeroData(query: String? = nil, offSet: Int? = nil) {
@@ -130,11 +144,17 @@ class MarvelHeroViewController: UIViewController {
             cell.layer.borderColor = UIColor.black.cgColor
             cell.clipsToBounds = true
             
+            let backgroundImageView = UIImageView(frame: cell.bounds)
+            backgroundImageView.image = UIImage(named: "background")
+            backgroundImageView.contentMode = .scaleAspectFill
+            backgroundImageView.clipsToBounds = true
+            
+            cell.backgroundView = backgroundImageView
+            
             if searching {
-
-                cell.heroLabel.text = self.searchCharacters[indexPath.item].name
                     
                 let sh = self.searchCharacters[indexPath.item]
+                cell.heroLabel.text = sh.name
                     
                 var thumbnailURLString = (sh.thumbnail?.path)! + "." + (sh.thumbnail?.imageExtension)!
                     thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
@@ -161,6 +181,7 @@ class MarvelHeroViewController: UIViewController {
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
             let details = characters[indexPath.item]
             let detailVC = MarvelDetailViewController(heroDetails: details)
+            detailVC.hidesBottomBarWhenPushed = true
             navigationController?.modalPresentationStyle = .fullScreen
             navigationController?.modalTransitionStyle = .crossDissolve
             navigationController?.pushViewController(detailVC, animated: true)
@@ -196,11 +217,19 @@ extension MarvelHeroViewController: UISearchResultsUpdating, UISearchBarDelegate
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
-        searchController.searchBar.backgroundColor = .white
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
         searchController.searchBar.placeholder = "Search Characters"
+
+        // Change the text color to white
+        if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            textField.textColor = UIColor.white
+            // Change the placeholder text color to white
+            if let placeholderLabel = textField.value(forKey: "placeholderLabel") as? UILabel {
+                placeholderLabel.textColor = UIColor.white
+            }
+        }
         
     }
     
@@ -217,7 +246,6 @@ extension MarvelHeroViewController: UISearchResultsUpdating, UISearchBarDelegate
             fetchHeroData(query: searchText)
         } else {
             searching = false
-            //searchCharacters = characters
             fetchHeroData()
         }
         self.marvelHeroCollectionView.reloadData()

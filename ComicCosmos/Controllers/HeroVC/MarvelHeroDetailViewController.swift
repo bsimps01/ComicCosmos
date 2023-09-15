@@ -12,13 +12,17 @@ class MarvelDetailViewController: UIViewController {
     
     //MARK: - Variables
     
-    var heroDetails: MarvelCharacter?
+    var heroDetails: MarvelCharacter? {
+        didSet {
+            configureButtonStack()
+        }
+    }
     
     var heroImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFit
-        image.sizeToFit()
+        //image.sizeToFit()
         return image
     }()
     
@@ -49,6 +53,15 @@ class MarvelDetailViewController: UIViewController {
         return scrollView
     }()
     
+    let buttonStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.distribution = .fillEqually
+        stack.spacing = 15
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     //MARK: - Initializers
     init(heroDetails: MarvelCharacter) {
         super.init(nibName: nil, bundle: nil)
@@ -62,13 +75,36 @@ class MarvelDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
         view.addSubview(scrollView)
+        scrollView.frame = view.frame
         scrollView.addSubview(heroImage)
         scrollView.addSubview(nameLabel)
         scrollView.addSubview(descriptionLabel)
+        //scrollView.addSubview(resourceButton)
+        scrollView.addSubview(buttonStack)
         
         configureDetails()
         detailsLayout()
+        configureButtonStack()
+
+    }
+    
+    @objc func urlButtonTapped(_ sender: UIButton) {
+        
+        guard let urlIndex = heroDetails?.urls?.indices.first(where: { $0 == sender.tag }) else { return }
+        
+        var urlString = heroDetails?.urls?[urlIndex].url ?? "N/A"
+        urlString = urlString.replacingOccurrences(of: "http://", with: "https://")
+        
+        if URL(string: urlString) != nil {
+            let web = MarvelHeroWebView()
+            web.url = urlString
+            web.modalPresentationStyle = .formSheet
+            web.modalTransitionStyle = .coverVertical
+            self.present(web, animated: true, completion: nil)
+        }
+        
     }
     
     //MARK: - Functions
@@ -87,23 +123,64 @@ class MarvelDetailViewController: UIViewController {
         }
     }
     
-    func detailsLayout(){
+    func configureButtonStack() {
         
-        scrollView.frame = view.frame
+        for subview in buttonStack.arrangedSubviews {
+            buttonStack.removeArrangedSubview(subview)
+            subview.removeFromSuperview()
+        }
+        
+        //Buttons based on Hero URLs
+        heroDetails?.urls?.forEach({ marvelURL in
+            
+            let button = UIButton(type: .system)
+            
+            let type = marvelURL.type
+            
+            switch (type) {
+            case "detail":
+                button.setTitle("\(heroDetails?.name ?? "")'s Details", for: .normal)
+            case "wiki":
+                button.setTitle("\(heroDetails?.name ?? "")'s Wiki", for: .normal)
+            case "comiclink":
+                button.setTitle("\(heroDetails?.name ?? "")'s Comics", for: .normal)
+            default:
+                button.setTitle(marvelURL.type, for: .normal)
+            }
+
+            button.addTarget(self, action: #selector(urlButtonTapped(_ :)), for: .touchUpInside)
+            button.frame.size = CGSize(width: view.frame.width/2, height: view.frame.height/8)
+            button.tag = buttonStack.arrangedSubviews.count // Set tag to identify the button
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.layer.borderWidth = 2
+            button.layer.borderColor = UIColor.black.cgColor
+            button.backgroundColor = .red
+            button.titleLabel?.textColor = .white
+            buttonStack.addArrangedSubview(button)
+        
+        })
+    }
+    
+    func detailsLayout(){
         
         heroImage.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
         heroImage.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
-        heroImage.topAnchor.constraint(equalTo: view.topAnchor, constant: 50).isActive = true
-        heroImage.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
+        heroImage.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50).isActive = true
         heroImage.heightAnchor.constraint(equalToConstant: view.bounds.height/2).isActive = true
+        heroImage.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
+        heroImage.bottomAnchor.constraint(equalTo: nameLabel.topAnchor, constant: 10).isActive = true
         
         nameLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
         nameLabel.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
-        nameLabel.topAnchor.constraint(equalTo: heroImage.bottomAnchor).isActive = true
         
         descriptionLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
         descriptionLabel.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         descriptionLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
+        
+        buttonStack.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
+        buttonStack.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
+        buttonStack.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10).isActive = true
+        buttonStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -50).isActive = true
 
         
     }

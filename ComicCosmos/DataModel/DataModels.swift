@@ -11,11 +11,11 @@ import UIKit
 //MARK: - Heroes
 
 struct MarvelCharacterResponse: Codable {
-    let data: MarvelCharacterData
+    let data: MarvelCharacterData?
 }
 
 struct MarvelCharacterData: Codable {
-    let results: [MarvelCharacter]
+    let results: [MarvelCharacter]?
 }
 
 struct MarvelCharacter: Codable {
@@ -25,6 +25,28 @@ struct MarvelCharacter: Codable {
     let resourceURL: String?
     let urls: [URLs]?
     let thumbnail: Image?
+    let comics: ComicList?
+    let stories: StoryList?
+}
+
+struct ComicList: Codable {
+    let available: Int?
+    let returned: Int?
+    let collectionURL: String?
+    let items: [ComicSummary]?
+}
+
+struct StoryList: Codable {
+    let available: Int?
+    let returned: Int?
+    let collectionURL: String?
+    let items: [StorySummary]?
+}
+
+struct StorySummary: Codable {
+    let resourceURL: String?
+    let name: String?
+    let type: String?
 }
 
 struct URLs: Codable {
@@ -45,11 +67,11 @@ struct Image: Codable {
 //MARK: - Comic
 
 struct ComicResponse: Codable {
-    let data: ComicData
+    let data: ComicData?
 }
 
 struct ComicData: Codable {
-    let results: [Comic]
+    let results: [Comic]?
 }
 
 struct Comic: Codable {
@@ -57,8 +79,11 @@ struct Comic: Codable {
     let description: String?
     let format: String?
     let pageCount: Int?
+    let resourceURL: String?
     let series: ComicSummary?
     let thumbnail: Image?
+    let images: [Image]?
+    let urls: [URLs]?
 }
 
 struct ComicSummary: Codable {
@@ -69,11 +94,11 @@ struct ComicSummary: Codable {
 //MARK: - Creator
 
 struct CreatorResponse: Codable {
-    let data: CreatorData
+    let data: CreatorData?
 }
 
 struct CreatorData: Codable {
-    let results: [Creator]
+    let results: [Creator]?
 }
 
 struct Creator: Codable {

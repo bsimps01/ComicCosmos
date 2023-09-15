@@ -48,10 +48,7 @@ class MarvelComicViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        backgroundImage.image = UIImage(named: "background")
-        view.addSubview(backgroundImage)
-        view.sendSubviewToBack(backgroundImage)
+        view.backgroundColor = .black
         
         marvelComicCollectionView.backgroundColor = .clear
         marvelComicCollectionView.dataSource = self
@@ -61,6 +58,24 @@ class MarvelComicViewController: UIViewController {
         fetchComicData()
         
         configureSearchController()
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.navigationItem.title = "Comics"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .always
+        
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+    
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        navigationController?.navigationBar.barTintColor = .black
+        
+        navigationController?.navigationBar.isTranslucent = true
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
     }
     
@@ -125,10 +140,18 @@ class MarvelComicViewController: UIViewController {
             cell.layer.borderColor = UIColor.black.cgColor
             cell.clipsToBounds = true
             
+            let backgroundImageView = UIImageView(frame: cell.bounds)
+            backgroundImageView.image = UIImage(named: "background")
+            backgroundImageView.contentMode = .scaleAspectFill
+            backgroundImageView.clipsToBounds = true
+            
+            cell.backgroundView = backgroundImageView
+            
             if searching {
-                cell.comicLabel.text = searchComics[indexPath.item].title
-                
+    
                 let sh = searchComics[indexPath.item]
+                cell.comicLabel.text = sh.title
+                
                 var thumbnailURLString = (sh.thumbnail?.path)! + "." + (sh.thumbnail?.imageExtension)!
                 thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
                 
@@ -192,11 +215,20 @@ extension MarvelComicViewController: UISearchResultsUpdating, UISearchBarDelegat
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.search
-        searchController.searchBar.backgroundColor = .white
+        //searchController.searchBar.backgroundColor = .white
         self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchController
         definesPresentationContext = true
         searchController.searchBar.placeholder = "Search Comics"
+        
+        // Change the text color to white
+        if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            textField.textColor = UIColor.white
+            // Change the placeholder text color to white
+            if let placeholderLabel = textField.value(forKey: "placeholderLabel") as? UILabel {
+                placeholderLabel.textColor = UIColor.white
+            }
+        }
         
     }
     
