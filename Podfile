@@ -8,5 +8,6 @@ target 'ComicCosmos' do
   # Pods for ComicCosmos
 
 pod 'SDWebImage', '~> 5.0'
+pod 'SwiftSoup'
 
 end

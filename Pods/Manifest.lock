@@ -2,17 +2,21 @@ PODS:
   - SDWebImage (5.17.0):
     - SDWebImage/Core (= 5.17.0)
   - SDWebImage/Core (5.17.0)
+  - SwiftSoup (2.6.1)
 
 DEPENDENCIES:
   - SDWebImage (~> 5.0)
+  - SwiftSoup
 
 SPEC REPOS:
   trunk:
     - SDWebImage
+    - SwiftSoup
 
 SPEC CHECKSUMS:
   SDWebImage: 750adf017a315a280c60fde706ab1e552a3ae4e9
+  SwiftSoup: 5dd2c1b06afc964f30d99894af6ede22ede627aa
 
-PODFILE CHECKSUM: 6fd250776350efa62765722eaace9c10eca05e13
+PODFILE CHECKSUM: c66c96d0b89de9eade016e2302635618f0f8f2aa
 
 COCOAPODS: 1.12.1

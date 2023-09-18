@@ -7,6 +7,7 @@
 
 import UIKit
 import SDWebImage
+import SwiftSoup
 
 class MarvelDetailViewController: UIViewController {
     
@@ -66,6 +67,7 @@ class MarvelDetailViewController: UIViewController {
     init(heroDetails: MarvelCharacter) {
         super.init(nibName: nil, bundle: nil)
         self.heroDetails = heroDetails
+        
     }
     
     required init?(coder: NSCoder) {
@@ -111,8 +113,22 @@ class MarvelDetailViewController: UIViewController {
     
     func configureDetails(){
         if let heroDetails = heroDetails {
+            
             nameLabel.text = heroDetails.name
-            descriptionLabel.text = heroDetails.description
+            
+//            if let data = heroDetails.description?.data(using: .utf8) {
+//                if let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil) {
+//                    let plainString = attributedString.string
+//                    // Do something with plainString
+//                    descriptionLabel.text = heroDetails.description
+//                }
+//            }
+            
+            if let attributedString = parseHTMLString(heroDetails.description!) {
+                descriptionLabel.attributedText = attributedString
+            }
+
+            //descriptionLabel.text = heroDetails.description
             
             var thumbnailURLString = (heroDetails.thumbnail?.path)! + "." + (heroDetails.thumbnail?.imageExtension)!
             thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
@@ -122,6 +138,24 @@ class MarvelDetailViewController: UIViewController {
             }
         }
     }
+
+    func parseHTMLString(_ htmlString: String) -> NSAttributedString? {
+        do {
+            let document = try SwiftSoup.parse(htmlString)
+            
+            // Convert parsed document to plain text
+            let plainText = try document.text()
+            
+            // Convert plainText to NSAttributedString (basic)
+            let attributedString = NSAttributedString(string: plainText)
+            
+            return attributedString
+        } catch {
+            print("Could not parse HTML: \(error)")
+            return nil
+        }
+    }
+
     
     func configureButtonStack() {
         
@@ -149,13 +183,14 @@ class MarvelDetailViewController: UIViewController {
             }
 
             button.addTarget(self, action: #selector(urlButtonTapped(_ :)), for: .touchUpInside)
-            button.frame.size = CGSize(width: view.frame.width/2, height: view.frame.height/8)
+            //button.frame.size = CGSize(width: 200, height: 200)
             button.tag = buttonStack.arrangedSubviews.count // Set tag to identify the button
             button.translatesAutoresizingMaskIntoConstraints = false
             button.layer.borderWidth = 2
             button.layer.borderColor = UIColor.black.cgColor
+            button.layer.cornerRadius = 20
             button.backgroundColor = .red
-            button.titleLabel?.textColor = .white
+            button.setTitleColor(.white, for: .normal)
             buttonStack.addArrangedSubview(button)
         
         })
@@ -168,20 +203,21 @@ class MarvelDetailViewController: UIViewController {
         heroImage.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50).isActive = true
         heroImage.heightAnchor.constraint(equalToConstant: view.bounds.height/2).isActive = true
         heroImage.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
-        heroImage.bottomAnchor.constraint(equalTo: nameLabel.topAnchor, constant: 10).isActive = true
+        heroImage.bottomAnchor.constraint(equalTo: nameLabel.topAnchor, constant: -10).isActive = true
         
         nameLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
         nameLabel.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         
-        descriptionLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
+        descriptionLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 10).isActive = true
         descriptionLabel.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         descriptionLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
         
-        buttonStack.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
-        buttonStack.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
+        buttonStack.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: view.frame.width/4).isActive = true
+        //buttonStack.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         buttonStack.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10).isActive = true
         buttonStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -50).isActive = true
-
+        buttonStack.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        buttonStack.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
     }
     

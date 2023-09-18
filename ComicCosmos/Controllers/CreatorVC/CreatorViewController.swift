@@ -89,6 +89,7 @@ class CreatorViewController: UIViewController {
         networkManager.fetchCreators(query: query, offSet: offSet){ [weak self] creators, error in
             if let creators = creators {
                 self?.creators = creators
+                print(creators)
                 DispatchQueue.main.async {
                     self?.creatorCollectionView.reloadData()
                 }
@@ -239,7 +240,7 @@ extension CreatorViewController: UISearchResultsUpdating, UISearchBarDelegate {
             searchCreators.removeAll()
                 
             searchCreators = creators.filter({ mc in
-                return (mc.firstName?.lowercased().contains(searchText.lowercased()) ?? false)
+                return (mc.firstName?.lowercased().contains(searchText.lowercased()) ?? false )
             })
             fetchCreatorData(query: searchText)
         } else {

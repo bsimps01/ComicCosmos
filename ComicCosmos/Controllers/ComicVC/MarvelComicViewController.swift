@@ -165,6 +165,7 @@ class MarvelComicViewController: UIViewController {
                 cell.configureComicCells(mvComic: comics)
                 cell.comicLabel.text = comics.title
                 
+                
                 //Comic Image
                 var thumbnailURLString = (comics.thumbnail?.path)! + "." + (comics.thumbnail?.imageExtension)!
                 thumbnailURLString = thumbnailURLString.replacingOccurrences(of: "http://", with: "https://")
